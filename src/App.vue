@@ -1,36 +1,138 @@
 <template>
-  <div>
-    <!-- Navigation menu - this stays on all pages -->
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/login">Login</router-link> |
-      <router-link to="/questions">Questions</router-link>
-    </nav>
-    <!-- router-view displays the current route's component -->
-    <router-view/>
+  <div id="app" class="min-h-screen bg-gray-50">
+    <NavigationHeader />
+
+    <main class="min-h-[calc(100vh-5rem)]">
+      <router-view v-slot="{ Component }">
+        <transition
+          mode="out-in"
+          enter-active-class="transition ease-out duration-200"
+          enter-from-class="opacity-0 translate-y-4"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition ease-in duration-150"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </main>
+
+    <footer class="bg-gray-900 text-white mt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- Company Info -->
+          <div class="col-span-1 md:col-span-2">
+            <h3 class="text-2xl font-display font-bold mb-4">Auctionary</h3>
+            <p class="text-gray-400 mb-4">
+              Your premier destination for antique pocket watches and fine
+              timepieces. Discover rare pieces and connect with collectors
+              worldwide.
+            </p>
+            <div class="flex space-x-4">
+              <a
+                href="#"
+                class="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path
+                    d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+                  />
+                </svg>
+              </a>
+              <a
+                href="#"
+                class="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path
+                    d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"
+                  />
+                </svg>
+              </a>
+              <a
+                href="#"
+                class="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path
+                    d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+            <ul class="space-y-2">
+              <li>
+                <router-link
+                  to="/browse"
+                  class="text-gray-400 hover:text-white transition-colors"
+                  >Browse Auctions</router-link
+                >
+              </li>
+              <li>
+                <router-link
+                  to="/about"
+                  class="text-gray-400 hover:text-white transition-colors"
+                  >About Us</router-link
+                >
+              </li>
+              <li>
+                <router-link
+                  to="/contact"
+                  class="text-gray-400 hover:text-white transition-colors"
+                  >Contact</router-link
+                >
+              </li>
+              <li>
+                <router-link
+                  to="/faq"
+                  class="text-gray-400 hover:text-white transition-colors"
+                  >FAQ</router-link
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Contact Us</h4>
+            <ul class="space-y-2 text-gray-400">
+              <li>Email: info@auctionary.com</li>
+              <li>Phone: +1 (555) 123-4567</li>
+              <li>Hours: Mon-Fri 9AM-6PM</li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400"
+        >
+          <p>&copy; 2024 Auctionary. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
 <script>
+import NavigationHeader from "./components/NavigationHeader.vue";
+
 export default {
-  name: 'App'
-}
+  name: "App",
+  components: {
+    NavigationHeader,
+  },
+};
 </script>
 
-<style scoped>
-nav {
-  padding: 1rem;
-  background-color: #f0f0f0;
-}
-
-nav a {
-  margin: 0 0.5rem;
-  text-decoration: none;
-  color: #333;
-}
-
-nav a.router-link-active {
-  font-weight: bold;
-  color: #42b983;
+<style>
+#app {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 </style>

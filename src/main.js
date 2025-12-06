@@ -1,6 +1,34 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import App from "./App.vue";
+import router from "./router";
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
+import "./assets/main.css";
+import { useAuthStore } from "./stores/auth";
 
-import router from './router'
+const app = createApp(App);
+const pinia = createPinia();
 
-createApp(App).use(router).mount('#app')
+app.use(pinia);
+app.use(router);
+app.use(Toast, {
+  position: "top-right",
+  timeout: 3000,
+  closeOnClick: true,
+  pauseOnFocusLoss: true,
+  pauseOnHover: true,
+  draggable: true,
+  draggablePercent: 0.6,
+  showCloseButtonOnHover: false,
+  hideProgressBar: false,
+  closeButton: "button",
+  icon: true,
+  rtl: false,
+});
+
+// Initialize authentication on app start
+const authStore = useAuthStore();
+authStore.initAuth();
+
+app.mount("#app");
