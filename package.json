@@ -12,12 +12,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/vue": "^1.7.23",
+    "@heroicons/vue": "^2.2.0",
+    "@vueuse/core": "^14.1.0",
+    "axios": "^1.13.2",
     "email-validator": "^2.0.4",
+    "lucide-vue-next": "^0.559.0",
+    "pinia": "^3.0.4",
+    "swiper": "^12.0.3",
     "vue": "^3.5.22",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.18",
     "vite": "^7.1.11",
     "vite-plugin-vue-devtools": "^8.0.3"
   }
