@@ -1,13 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import Home from "../Home.vue";
-import Login from "../Login.vue";
-import Questions from "../Questions.vue";
+import Home from "../views/pages/Home.vue";
+import Login from "../views/pages/Login.vue";
+import Questions from "../views/pages/Questions.vue";
+import SingleItem from '../views/pages/SingleItem.vue';
 
 const routes = [
     { path: '/', component: Home },
     { path: '/login', component: Login },
     { path: '/questions', component: Questions },
+    { path: '/item/:item_id', component: SingleItem },
     
     // { path: '/questions', component: Questions, beforeEnter: ifAuthenticated },
 
