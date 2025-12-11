@@ -5,10 +5,14 @@
       <em v-if="loading">Loading item details...</em>
       <div v-else-if="item">
           <h2>{{ item.name }}</h2>
+          <p><strong>Product selected: ID:</strong> {{ item.item_id }}</p>
           <p><strong>Description:</strong> {{ item.description }}</p>
-          <p><strong>Starting Bid:</strong> £{{ item.starting_bid }}</p>
-          <p><strong>Current Bid:</strong> £{{ item.current_bid || item.starting_bid }}</p>
+          <p><strong>Creator ID:</strong> {{ item.creator_id }}</p>
+          <p><strong>First Name:</strong> {{ item.first_name }}</p>
+          <p><strong>Last Name:</strong> {{ item.last_name }}</p>
           <p><strong>Auction Ends:</strong> {{ new Date(item.end_date * 1000).toLocaleString() }}</p>
+          <p><strong>Starting Bid:</strong> £{{ item.starting_bid }}</p>
+          <p><strong>Current Bid:</strong> £{{ item.current_bid }}</p>
       </div>
       <div v-else-if="error">
           <p class="error-message">Error: {{ error }}</p>

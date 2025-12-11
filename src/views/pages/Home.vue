@@ -1,4 +1,12 @@
 <template>
+    <div class="auth-options">
+      <router-link to="/login">
+        <button class="auth-btn">Login</button>
+      </router-link>
+      <router-link to="/register">
+        <button class="auth-btn secondary">Create Account</button>
+      </router-link>
+    </div>
     <div>
          <!-- Home page has its own content -->
         <h1>{{welcome_message}}</h1>
@@ -55,6 +63,27 @@
   }
 </script>
 <style scoped>
+  .auth-options {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.auth-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #42b983;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.auth-btn.secondary {
+  background-color: #2c3e50; /* Different color for Register */
+}
 div {
     padding: 2rem;
 }

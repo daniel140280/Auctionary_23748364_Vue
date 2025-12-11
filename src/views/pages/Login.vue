@@ -62,8 +62,8 @@
                 alert("Button clicked - Login attempted");
 
                 // After successful API login, you would do:
-                // localStorage.setItem('session_token', response.session_token);
-                // this.$router.push('/');
+                localStorage.setItem('session_token', response.session_token);
+                this.$router.push('/');
             }
         }
     }
