@@ -21,13 +21,12 @@
     <footer class="bg-gray-900 text-white mt-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <!-- Company Info -->
+          <!-- Brief Company Info -->
           <div class="col-span-1 md:col-span-2">
-            <h3 class="text-2xl font-display font-bold mb-4">Auctionary</h3>
+            <h3 class="text-2xl font-display font-bold mb-4">Watch Auctionary</h3>
             <p class="text-gray-400 mb-4">
-              Your premier destination for antique pocket watches and fine
-              timepieces. Discover rare pieces and connect with collectors
-              worldwide.
+              Your number one destination for antique pocket watches and fine
+              timepieces.
             </p>
             <div class="flex space-x-4">
               <a
@@ -69,23 +68,9 @@
             <ul class="space-y-2">
               <li>
                 <router-link
-                  to="/browse"
-                  class="text-gray-400 hover:text-white transition-colors"
-                  >Browse Auctions</router-link
-                >
-              </li>
-              <li>
-                <router-link
                   to="/about"
                   class="text-gray-400 hover:text-white transition-colors"
                   >About Us</router-link
-                >
-              </li>
-              <li>
-                <router-link
-                  to="/contact"
-                  class="text-gray-400 hover:text-white transition-colors"
-                  >Contact</router-link
                 >
               </li>
               <li>
@@ -98,13 +83,13 @@
             </ul>
           </div>
 
-          <!-- Contact -->
+          <!-- Contact Us -->
           <div>
             <h4 class="text-lg font-semibold mb-4">Contact Us</h4>
             <ul class="space-y-2 text-gray-400">
-              <li>Email: info@auctionary.com</li>
-              <li>Phone: +1 (555) 123-4567</li>
-              <li>Hours: Mon-Fri 9AM-6PM</li>
+              <li>Email: info@auctionary.co.uk</li>
+              <li>Phone: +44 07766554433</li>
+              <li>Hours: Mon-Fri 10AM-4PM</li>
             </ul>
           </div>
         </div>
@@ -112,7 +97,7 @@
         <div
           class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400"
         >
-          <p>&copy; 2024 Auctionary. All rights reserved.</p>
+          <p>&copy; 2025 Watch Auctionary. All rights reserved.</p>
         </div>
       </div>
     </footer>
@@ -120,7 +105,7 @@
 </template>
 
 <script>
-import NavigationHeader from './NavigationHeader.vue';
+import NavigationHeader from './components/NavigationHeader.vue';
 
 export default {
   name: "App",

@@ -7,7 +7,7 @@
           </h1>
   
           <div class="prose prose-lg max-w-none text-gray-700">
-            <p class="mb-4">Last updated: December 2024</p>
+            <p class="mb-4">Last updated: December 2025</p>
   
             <h2 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">
               1. Information We Collect

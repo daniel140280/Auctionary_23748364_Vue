@@ -227,7 +227,7 @@
   <script>
   import { ref, reactive } from "vue";
   import { useRouter } from "vue-router";
-  import { useAuthStore } from "../stores/auth";
+  import { useAuthStore } from "@/stores/auth";
   import { useToast } from "vue-toastification";
   import * as EmailValidator from "email-validator";
   import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-vue-next";

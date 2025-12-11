@@ -71,7 +71,7 @@
                     <option value="">Select a category</option>
                     <option value="pocket-watches">Pocket Watches</option>
                     <option value="wristwatches">Wristwatches</option>
-                    <option value="jewelry">Jewelry</option>
+                    <option value="jewellery">Jewellery</option>
                     <option value="collectibles">Collectibles</option>
                     <option value="other">Other Antiques</option>
                   </select>

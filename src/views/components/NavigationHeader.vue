@@ -260,7 +260,7 @@
   <script>
   import { ref, computed, onMounted, onUnmounted } from "vue";
   import { useRouter } from "vue-router";
-  import { useAuthStore } from "../stores/auth";
+  import { useAuthStore } from "../../stores/auth";
   import { useToast } from "vue-toastification";
   
   export default {

@@ -52,7 +52,7 @@
                   <option value="">All Categories</option>
                   <option value="pocket-watches">Pocket Watches</option>
                   <option value="wristwatches">Wristwatches</option>
-                  <option value="jewelry">Jewelry</option>
+                  <option value="jewellery">Jewellery</option>
                   <option value="collectibles">Collectibles</option>
                   <option value="other">Other Antiques</option>
                 </select>
@@ -346,7 +346,7 @@
   <script>
   import { ref, reactive, computed, onMounted, watch } from "vue";
   import { useRoute, useRouter } from "vue-router";
-  import { useItemsStore } from "../stores/items";
+  import { useItemsStore } from "../../stores/items";
   import ItemCard from "../components/ItemCard.vue";
   import { Search, Grid, List, Clock, Users } from "lucide-vue-next";
   

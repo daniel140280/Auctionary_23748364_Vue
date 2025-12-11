@@ -191,7 +191,7 @@
             </div>
             <h3 class="text-xl font-semibold mb-3">Create Account</h3>
             <p class="text-gray-600">
-              Sign up in minutes and join our community of collectors
+              Sign up and join our community of collectors
             </p>
           </div>
 
@@ -222,7 +222,7 @@
       </div>
     </section>
 
-    <!-- CTA Section -->
+    <!-- Register Banner CTA Section -->
     <section
       class="py-16 bg-gradient-to-r from-primary-700 to-primary-900 text-white"
     >
@@ -255,6 +255,7 @@ import "swiper/css/pagination";
 import { useItemsStore } from "../stores/items";
 import ItemCard from "./ItemCard.vue";
 import { Clock, Watch, Gem, Award } from "lucide-vue-next";
+// import { CoreService } from "./services/core.service";
 
 export default {
   name: "HomePage",
@@ -278,7 +279,7 @@ export default {
         count: 124,
       },
       { name: "Wristwatches", slug: "wristwatches", icon: Watch, count: 89 },
-      { name: "Jewelry", slug: "jewelry", icon: Gem, count: 156 },
+      { name: "Jewellery", slug: "jewellery", icon: Gem, count: 156 },
       { name: "Collectibles", slug: "collectibles", icon: Award, count: 203 },
     ];
 
