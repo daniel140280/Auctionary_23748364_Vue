@@ -12,6 +12,6 @@ const ifAuthenticated = (to, from, next) => {
     }
 };
 
-export const isAuthenticated = {
+export default isAuthenticated = {
     ifAuthenticated
 };

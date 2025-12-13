@@ -37,6 +37,10 @@ const searchSingleItems = (item_id) => {
         return resJson;
     })
     .catch((err) => {
+        if (err instanceof TypeError) { 
+            console.error("Network or URL Error:", err.message);
+            return Promise.reject("Could not connect to the server (check URL and network connection).");
+       }
         console.log("Error", err)
         return Promise.reject(err);
     })

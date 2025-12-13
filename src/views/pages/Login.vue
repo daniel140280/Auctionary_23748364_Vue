@@ -24,6 +24,8 @@
   
   <script>
   import * as EmailValidator from 'email-validator';
+  import { UserService } from '@/services/user.service';
+
     export default {
         name: 'Login',
         data(){
@@ -31,8 +33,15 @@
                 email: "",
                 password: "",
                 submitted: false,   //starts as false, but we change when button is clicked.
-                error: ""           //initialise error property
+                error: "",          //initialise error property
+                loading: false      //add to avoid double clicks
             }
+        },
+        mounted() {
+            this.email = "";
+            this.password = "";
+            this.submitted = false;
+            this.error = "";
         },
         methods: {
             handleSubmit() {
@@ -40,33 +49,39 @@
                 this.error = "";    //clear previous error messages
                 const {email, password} = this;
                 
-                //Check if both fields are filled.
                 if(!(email && password)){
                     return;
                 }
-                //Validate email format.
                 if(!(EmailValidator.validate(email))){
                     this.error = "Email address must be a valid email format" ;
                     return;
-                }
-                //UPDATE REGEX INLINE WITH NODE LAYER
-                //Validate password format (8+ chars, at least one letter and one number).
-                const password_pattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/
+                } 
+                const password_pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
                 if(!(password_pattern.test(password))){
-                    this.error = "Password must be minimum eight characters, at least one letter and one number";
+                    this.error = "Password must be 8-16 characters, include uppercase, lowercase, number, and special character.";
                     return;
                 }
-                //if we reach here, all validation passed and we send to server
-                // TODO: Make API call to login endpoint
-                console.log("Login attempt with:", { email, password });
-                alert("Button clicked - Login attempted");
+                this.loading = true; //set loading to true to avoid double clicks
+                //Call bac-end service
+                UserService.login(email, password)
+                .then(response => {
+                  console.log("Login successful:", response);
+                    // Store session token and redirect to home
+                    localStorage.setItem('session_token', response.session_token);
+                    localStorage.setItem('user_id', response.user_id);
 
-                // After successful API login, you would do:
-                localStorage.setItem('session_token', response.session_token);
-                this.$router.push('/');
+                    //Redirect to home page
+                    this.$router.push('/');
+                })
+                .catch(err => {
+                    console.error("Login failed:", err);
+                    this.error = err.message;
+                    this.loading = false; //reset loading on error
+                });
             }
         }
     }
+
   </script>
   
   <style scoped>
