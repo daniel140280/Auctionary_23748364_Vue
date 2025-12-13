@@ -11,6 +11,7 @@
       </span>
 
       <span v-else class="logout-section">
+          <router-link to="/profile" class="nav-link profile-link">Profile</router-link> |
           <button @click="handleLogout" class="logout-button">Logout</button>
       </span>
     </nav>

@@ -106,8 +106,38 @@ const logout = () => {
     });
 }
 
+const getUserProfile = (user_id) => {
+    const token = localStorage.getItem('session_token');
+    if (!token) {
+        return Promise.reject("Not authenticated. Token missing.");
+    }
+    
+    return fetch(`http://localhost:3333/users/${user_id}`, {
+    method: "GET",
+    headers: {
+        "X-Authorization": token
+    }
+})
+.then((response) => {
+    if(response.status === 200){
+        return response.json();
+    } else if (response.status === 404) {
+        throw "User not found.";
+    } else if (response.status === 401 || response.status === 403) {
+        throw "Authentication required or access denied.";
+    } else {
+        throw new Error("Server error fetching profile.");
+    }
+})
+.catch((err) => {
+    console.error("Error fetching profile:", err);
+    return Promise.reject(err);
+});
+}
+
 export const UserService = {
     register,
     login,
-    logout
+    logout,
+    getUserProfile
 };
