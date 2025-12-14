@@ -46,21 +46,51 @@ const searchSingleItems = (item_id) => {
     })
 }
 
+const getBidHistory = (item_id) => {
+    return fetch('http://localhost:3333/item/${item_id}/bid')
+    .then((response) => {
+        if(response.status === 200){
+            return response.json();
+        } else {
+            throw new Error("Could not fetch bid history");
+        }
+    })
+}
+
+const placeBid = (item_id, amount) => {
+    const sessionToken = localStorage.getItem('session_token');
+    
+    // Authorization check happens on the server, but we need the token here
+    if (!sessionToken) {
+        return Promise.reject(new Error("You must be logged in to place a bid."));
+    }
+
+    return fetch(`http://localhost:3333/item/${item_id}/bid`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Authorization': sessionToken
+        },
+        body: JSON.stringify({ amount: amount })
+    })
+    .then(async (response) => {
+        const responseBody = await response.json();
+        
+        if (response.status === 201) {
+            return responseBody;
+        } else if (response.status === 400 || response.status === 403) {
+            throw new Error(responseBody.error_message || "Bid validation failed - you can't bid on your own item.");
+        } else if (response.status === 401) {
+            throw new Error("Authentication failed. Please log in again.");
+        } else {
+            throw new Error(responseBody.error_message || "An unexpected error occurred while placing the bid.");
+        }
+    });
+}
+
 export const CoreService = {
     searchItems,
-    searchSingleItems
+    searchSingleItems,
+    getBidHistory,
+    placeBid
 };
-
-// const searchItems = async () => {
-//     try {
-//       const response = await fetch("https://localhost:3333/search");
-//       if (response.status !== 200) {
-//         throw new Error("Something went wrong retrieving search results");
-//       }
-//       const resJson = await response.json();
-//       return resJson;
-//     } catch (err) {
-//       console.log("Error", err);
-//       throw err; // preserve rejection for caller
-//     }
-//   };
