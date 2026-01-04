@@ -1,35 +1,45 @@
 <template>
-    <div class="home-wrapper">
+  <div class="page-wrapper"> 
+    <div class="content-container"> 
 
       <div class="auth-options">
-        <router-link to="/login"><button class="auth-btn">Login</button></router-link>
-        <router-link to="/register"><button class="auth-btn secondary">Create Account</button></router-link>
+        <template v-if="!isLoggedIn">
+          <router-link to="/login" class="btn btn-primary">Login</router-link>
+          <router-link to="/register" class="btn btn-secondary">Create Account</router-link>
+        </template>
+        <template v-else>
+          <router-link to="/profile" class="btn btn-primary">My Profile</router-link>
+          <button @click="handleLogout" class="btn btn-secondary">Logout</button>
+        </template>
       </div>
 
-    <div class="hero">
-        <h1>{{welcome_message}}</h1>
-        <p>The premium auction house for sexy ass watches.</p>
+      <div class="hero">
+        <h1 v-if="isLoggedIn">Welcome Back to Auctionable!</h1>
+        <h1 v-else>{{welcome_message}}</h1>
+        <p>The premium auction house for high-end watches and jewellery.</p>
         
-        <div class="search-bar">
-          <input type="text" v-model="searchQuery" placeholder="Search items by name or description"/>
+        <div class="search-bar-row">
+          <input type="text" v-model="searchQuery" placeholder="Search items..."/>
+          <select v-model="statusFilter" class="status-dropdown">
+            <option value="all">All Items</option>
+            <option value="open">Open Auctions</option>
+            <option value="archive">Archive (Closed)</option>
+            <option value="bid">Items I've Bid On</option>
+          </select>
         </div>
-    </div>
+      </div> 
 
-    <div class="results-area">
-      <h2 class="section-title">{{search_message}}</h2>
+      <div class="results-area">
+        <h2 class="section-title">{{search_message}}</h2>
 
-      <em v-if="loading">Loading items...</em>
-      <div v-else-if="error" class="error-msg">{{ error }}</div>
-
-      <div v-else-if="filteredItems.length" class="item-grid">
-        
-        <div v-for="item in filteredItems" :key="item.item_id" class="item-card">
+        <div v-if="filteredItems.length" class="item-grid">
+          <div v-for="item in filteredItems" :key="item.item_id" class="item-card">
             <div class="card-header">
                 <h3>{{ item.name }}</h3>
                 <span class="seller-tag">by {{ item.first_name }} {{ item.last_name }}</span>
             </div>
             
-            <div class="card-body">
+            <div class="card-body" style="flex-grow: 1;">
                 <p class="description">{{ truncateText(item.description, 80) }}</p>
                 <div class="card-meta">
                     <p>Ends: {{ formatDate(item.end_date) }}</p>
@@ -37,28 +47,25 @@
             </div>
 
             <div class="card-footer">
-                <router-link :to="`/item/${item.item_id}`" class="view-btn">View Details and Bid</router-link>
-                
-                <button @click="openHistory(item.item_id)" class="history-btn">Bid History</button>
+                <router-link :to="`/item/${item.item_id}`" class="btn btn-primary">View Details and Bid</router-link>
+                <button @click="openHistory(item.item_id)" class="btn btn-primary">Bid History</button>
             </div>
+          </div>
         </div>
       </div>
 
-      <div v-else class="no-results">
-        <p>No items found matching "{{ searchQuery }}"</p>
-      </div>
-    </div>
-
-    <BidHistoryModal 
-        :isOpen="isModalOpen" 
-        :itemId="selectedItemId" 
-        @close="isModalOpen = false" 
-    />
-    </div>
+      <BidHistoryModal 
+          :isOpen="isModalOpen" 
+          :itemId="selectedItemId" 
+          @close="isModalOpen = false" 
+      />
+    </div> 
+  </div>
 </template>
 
 <script>
   import { CoreService } from '@/services/core.service';
+  import { UserService } from '@/services/user.service';
   import  BidHistoryModal from '@/views/components/BidHistoryModal.vue'
 
     export default {
@@ -75,21 +82,31 @@
         loading: true,
         searchQuery: "",
         isModalOpen: false,
-        selectedItemId: 0
+        selectedItemId: 0, 
+        isLoggedIn: !!localStorage.getItem('session_token'),
+        statusFilter: 'all',
+        currentUserId: parseInt(localStorage.getItem('user_id'))
       }
     }, 
     computed: {
       filteredItems() {
-        if(!this.searchQuery) {
-          return this.items;
-        }
-        const lowerQuery = this.searchQuery.toLowerCase();
+        let list = this.items;
 
-        return this.items.filter(item => 
-          item.name.toLowerCase().includes(lowerQuery) || 
-          item.description.toLowerCase().includes(lowerQuery)
-        );
-      }
+        if (this.searchQuery) {
+            const q = this.searchQuery.toLowerCase();
+            list = list.filter(i => i.name.toLowerCase().includes(q) || i.description.toLowerCase().includes(q));
+        }
+
+        const now = Date.now();
+        if (this.statusFilter === 'open') {
+            list = list.filter(i => i.end_date > now);
+        } else if (this.statusFilter === 'archive') {
+            list = list.filter(i => i.end_date < now);
+        } else if (this.statusFilter === 'bid') {
+            list = list.filter(i => i.current_bidder_id === this.currentUserId);
+        }
+        return list;
+    }
     },
     mounted(){
       CoreService.searchItems()
@@ -114,8 +131,18 @@
         return text.length > length ? text.substring(0, length) + '...' : text;
       },
       formatDate(timestamp) {
-        const date = new Date(timestamp * 1000);
-        return date.toLocaleString();
+        if (!timestamp) return "N/A";
+        return new Date(timestamp).toLocaleString('en-GB');
+      },
+      handleLogout() {
+        UserService.logout()
+          .then(() => {
+            localStorage.removeItem('session_token');
+            localStorage.removeItem('user_id');
+            this.isLoggedIn = false;
+            this.$router.push('/login');
+          })
+          .catch(err => alert("Logout failed: " + err));
       }
     }
   }
@@ -154,16 +181,6 @@
     margin-top: 20px;
 }
 
-.item-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    overflow: hidden;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
 .item-card:hover { 
     transform: translateY(-5px); 
     box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
@@ -190,7 +207,7 @@
 }
 
 /* Button Styles */
-.view-btn, .history-btn {
+.history-btn {
   flex: 1;
     text-align: center;
     padding: 10px;
@@ -202,21 +219,11 @@
     text-decoration: none;
     font-weight: 500;
 }
-
-.view-btn { 
-    background-color: #42b983; 
-    color: white; 
-}
 .view-btn:hover { background-color: #3aa876; }
 
-.history-btn { 
-    background-color: #eef2f5; 
-    color: #2c3e50; 
-}
 .history-btn:hover { background-color: #dbe2e8; }
 
-.auth-options { display: flex; gap: 1rem; justify-content: flex-end; margin-bottom: 2rem; }
-.auth-btn { padding: 0.5rem 1rem; background-color: #42b983; color: white; border: none; border-radius: 4px; text-decoration: none; }
+.auth-options { display: flex; gap: 15px; justify-content: flex-end; margin: 20px; }
 .auth-btn.secondary { background-color: #2c3e50; }
 .no-results { text-align: center; padding: 2rem; color: #777; }
 .error-msg { color: #d9534f; text-align: center; }

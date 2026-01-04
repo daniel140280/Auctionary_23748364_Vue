@@ -40,6 +40,7 @@
         mounted() {
             this.email = "";
             this.password = "";
+            if(this.first_name) this.first_name = "";
             this.submitted = false;
             this.error = "";
         },
@@ -65,7 +66,7 @@
                 //Call bac-end service
                 UserService.login(email, password)
                 .then(response => {
-                  console.log("Login successful:", response);
+                console.log("Login successful:", response);
                     // Store session token and redirect to home
                     localStorage.setItem('session_token', response.session_token);
                     localStorage.setItem('user_id', response.user_id);
@@ -99,13 +100,6 @@ label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: bold;
-}
-
-input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
 }
 
 button {

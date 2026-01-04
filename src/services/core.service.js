@@ -47,7 +47,7 @@ const searchSingleItems = (item_id) => {
 }
 
 const getBidHistory = (item_id) => {
-    return fetch('http://localhost:3333/item/${item_id}/bid')
+    return fetch(`http://localhost:3333/item/${item_id}/bid`)
     .then((response) => {
         if(response.status === 200){
             return response.json();
@@ -88,9 +88,25 @@ const placeBid = (item_id, amount) => {
     });
 }
 
+const createItem = (item) => {
+    return fetch("http://localhost:3333/item", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Authorization": localStorage.getItem('session_token')
+        },
+        body: JSON.stringify(item)
+    })
+    .then(res => {
+        if (res.status === 201) return res.json();
+        throw "Failed to create item";
+    });
+};
+
 export const CoreService = {
     searchItems,
     searchSingleItems,
     getBidHistory,
-    placeBid
+    placeBid,
+    createItem
 };

@@ -57,25 +57,24 @@
         loading: false
       }
     },
+    mounted() {
+            this.email = "";
+            this.password = "";
+            if(this.first_name) this.first_name = "";
+        },
     methods: {
       handleSubmit() {
         this.submitted = true;
         this.error = "";
         const { first_name, last_name, email, password } = this;
-  
-        // 1. Basic field check
         if (!(first_name && last_name && email && password)) {
           return;
         }
-  
-        // 2. Email Validation
         if (!(EmailValidator.validate(email))) {
           this.error = "Please enter a valid email address.";
           return;
         }
-  
-        // 3. Password Regex (Must match Backend Joi Pattern exactly)
-        // Backend pattern: 8-16 chars, 1 upper, 1 lower, 1 number, 1 special
+
         const password_pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
         if (!(password_pattern.test(password))) {
           this.error = "Password does not meet complexity requirements.";
@@ -84,11 +83,9 @@
   
         this.loading = true;
 
-        // 4. Call the Backend
         UserService.register(first_name, last_name, email, password)
           .then(data => {
             console.log("Registered successfully, User ID:", data.user_id);
-            // On success, redirect to login so they can sign in with new account
             alert("Account created! Please log in.");
             this.$router.push('/login');
           })
@@ -102,7 +99,6 @@
 </script>
   
 <style scoped>
-/* Reusing your Login styles for consistency */
 .register-container {
   max-width: 400px;
   margin: 2rem auto;
@@ -110,7 +106,6 @@
 }
 .form-group { margin-bottom: 1rem; }
 label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-input { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
 button { width: 100%; padding: 0.75rem; background-color: #42b983; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
 button:hover { background-color: #359268; }
 button:disabled { background-color: #ccc; cursor: not-allowed; }

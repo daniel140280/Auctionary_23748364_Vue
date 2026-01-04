@@ -4,39 +4,56 @@
         <h2 v-if="loading" class="text-center">Loading Profile...</h2>
         <div v-else-if="error" class="error-message text-center">{{ error }}</div>
         
-        <div v-else class="profile-card">
-            
-            <header class="profile-header">
-                <h3>Welcome, {{ profile.first_name }} {{ profile.last_name }}</h3>
-                <p class="user-id">User ID: {{ profile.user_id }}</p>
-            </header>
-            
-            <div class="profile-section">
-                <h4>Items You Are Selling ({{ profile.selling.length }})</h4>
-                <ul class="item-list" v-if="profile.selling.length">
-                    <li v-for="item in profile.selling" :key="item.item_id">
-                        <router-link :to="`/item/${item.item_id}`">{{ item.name }}</router-link>
-                    </li>
-                </ul>
-                <p v-else class="no-items">You have no active listings.</p>
-            </div>
+    <h1>Member Profile</h1>
+    
+    <div class="profile-tabs">
+        <button @click="tab = 'buying'" :class="{active: tab === 'buying'}">My Bids</button>
+        <button @click="tab = 'selling'" :class="{active: tab === 'selling'}">My Listings</button>
+        <button @click="tab = 'create'" :class="{active: tab === 'create'}" class="create-tab">+ Sell Item</button>
+    </div>
 
-            <div class="profile-section">
-                <h4>Items You Are Bidding On ({{ profile.bidding_on.length }})</h4>
-                <ul class="item-list" v-if="profile.bidding_on.length">
-                    <li v-for="item in profile.bidding_on" :key="item.item_id">
-                        <router-link :to="`/item/${item.item_id}`">{{ item.name }}</router-link>
-                    </li>
-                </ul>
-                <p v-else class="no-items">You are not currently bidding on any items.</p>
-            </div>
+    <div v-if="tab === 'create'" class="tab-content">
+        <h3>List an Item for Sale</h3>
+        <form @submit.prevent="handleCreateItem" class="sell-item-form">
+            <label>Item Name:</label>
+            <input v-model="newItem.name" required />
+
+            <label>Description:</label>
+            <textarea v-model="newItem.description"></textarea>
+
+            <label>Start Price (£):</label>
+            <input type="number" v-model.number="newItem.starting_bid" required />
+
+            <label>Ends On:</label>
+            <input type="datetime-local" v-model="newItem.end_date_raw" required />
+
+            <span></span> <button class="btn btn-primary">Launch for Sale</button>
+        </form>
+    </div>
+
+    <div v-if="tab === 'selling'" class="tab-content">
+        <div v-for="item in myItems" :key="item.item_id" class="seller-item-card">
+            <h4>{{ item.name }} (Current Bid: £{{ item.current_bid || item.starting_bid }})</h4>
             
+            <div class="seller-questions">
+                <h5>Unanswered Questions:</h5>
+                <div v-for="q in item.questions" :key="q.question_id">
+                    <div v-if="!q.answer_text" class="answer-box">
+                        <p><strong>Q:</strong> {{ q.question_text }}</p>
+                        <textarea v-model="pendingAnswers[q.question_id]" placeholder="Type answer..."></textarea>
+                        <button @click="submitAnswer(q.question_id)">Submit Answer</button>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
     </div>
 </template>
 
 <script>
 import { UserService } from '@/services/user.service';
+import { CoreService } from '@/services/core.service';
+import { QuestionService } from '@/services/question.service';
 
 export default {
     name: 'Profile',
@@ -44,10 +61,13 @@ export default {
         return {
             profile: null,
             loading: true,
-            error: null
+            error: null,
+            tab: 'buying',
+            myItems: [],
+            pendingAnswers: {},
+            newItem: { name: '', description: '', starting_bid: 0, end_date_raw: '' }
         }
     },
-    // FIX 11: Call service on component creation
     async created() {
         const userId = localStorage.getItem('user_id');
         if (!userId) {
@@ -63,6 +83,55 @@ export default {
         } finally {
             this.loading = false;
         }
+    },
+    methods: {
+        handleCreateItem() {
+            const unixEnd = Math.floor(new Date(this.newItem.end_date_raw).getTime() / 1000);
+            
+            const payload = {
+                name: this.newItem.name,
+                description: this.newItem.description,
+                starting_bid: this.newItem.starting_bid,
+                end_date: unixEnd
+            };
+
+            CoreService.createItem(payload)
+                .then(() => {
+                    alert("Listing created!");
+                    this.tab = 'selling';
+                    this.fetchMyItems();
+                })
+                .catch(err => alert(err));
+        },
+        fetchMyItems() {
+            const userId = localStorage.getItem('user_id');
+            CoreService.searchItems()
+                .then(allItems => {
+                    this.myItems = allItems.filter(item => item.creator_id == userId);
+                        this.myItems.forEach(item => {
+                        QuestionService.getQuestionsForItem(item.item_id)
+                            .then(qs => {
+                                item.questions = qs;
+                            });
+                    });
+                });
+        },
+        submitAnswer(qId) {
+            const answerText = this.pendingAnswers[qId];
+            if(!text) {
+                return;
+            }
+            QuestionService.answerQuestion(qId, answerText)
+                .then(() => {
+                    alert("Answer posted!");
+                    this.pendingAnswers[qId] = '';
+                    this.fetchMyItems();
+                })
+                .catch(err => alert(err));
+        }
+    },
+    mounted() {
+        this.fetchMyItems();
     }
 }
 </script>
@@ -86,6 +155,29 @@ export default {
     border-bottom: 2px solid #42b983;
     padding-bottom: 1rem;
     margin-bottom: 1.5rem;
+}
+
+.profile-tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.sell-item-form {
+    display: grid;
+    grid-template-columns: 140px 1fr; 
+    gap: 15px;
+    align-items: center; 
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.sell-item-form label {
+    font-weight: bold;
+    color: #2c3e50;
+    text-align: right; 
 }
 
 .user-id {
@@ -127,8 +219,4 @@ export default {
     padding-left: 14px;
 }
 
-.error-message.text-center {
-    color: #d9534f;
-    font-weight: bold;
-}
 </style>
