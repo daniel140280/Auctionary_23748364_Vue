@@ -17,13 +17,13 @@
 
         <div class="form-group">
             <label for="email">Email address:</label>
-            <input type="email" id="email" v-model="email" />
+            <input type="email" id="email" v-model="email" placeholder="Email" class="custom-input" autocomplete="new-email" required/>
             <div class="error" v-show="submitted && !email">Email is required</div>
         </div>
   
         <div class="form-group">
             <label for="password">Password:</label>
-            <input type="password" id="password" v-model="password"/>
+            <input type="password" id="password" v-model="password" placeholder="Password" class="custom-input" autocomplete="new-password" required/>
             <div class="error" v-show="submitted && !password">Password is required</div>
             <div class="hint">Must be 8-16 chars, include uppercase, lowercase, number & special char.</div>
         </div>

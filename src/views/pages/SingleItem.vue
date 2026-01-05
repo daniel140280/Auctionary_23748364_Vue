@@ -1,13 +1,12 @@
 <template>
     <div class="single-item-container">
+        <div class="nav-back"><router-link to="/" class="btn-outline">← Back to All Listings</router-link></div>
 
-    <div class="nav-back"><router-link to="/" class="btn-outline">← Back to All Listings</router-link></div>
+        <div v-if="loading" class="text-center">Loading item...</div>
+        <div v-else-if="error" class="error-msg">{{ error }}</div>
 
-    <div v-if="loading" class="text-center">Loading item...</div>
-    <div v-else-if="error" class="error-msg">{{ error }}</div>
-
-    <div class="main-layout-grid">
-        <div class="details-column">
+        <div v-else class="main-layout-grid">
+            <div class="details-column">
             <section class="item-header">
                 <h1>{{ item.name }}</h1>
                 <p class="subtitle">Seller: {{ item.first_name }} {{ item.last_name }}</p>
@@ -19,68 +18,59 @@
             </section>
 
             <section class="questions-section">
-                    <div class="questions-header">
-                        <h3>Questions & Answers</h3>
-                        <div class="sort-controls">
-                            <label>Sort:</label>
-                            <select v-model="questionSortOrder">
-                                <option value="newest">Newest First</option>
-                                <option value="oldest">Oldest First</option>
-                                <option value="answered">Answered First</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div v-if="questions.length === 0" class="no-data">No questions yet.</div>
-                    
-                    <div v-for="q in sortedQuestions" :key="q.question_id" class="question-card">
-                        <p class="question-text"><strong>Q:</strong> {{ q.question_text }}</p>
-                        <p class="answer-text" v-if="q.answer_text"><strong>A:</strong> {{ q.answer_text }}</p>
-                        <p class="no-answer" v-else><em>Awaiting seller response...</em></p>
-                    </div>
-
-                    <div v-if="isLoggedIn && !isOwnItem" class="ask-box">
-                        <textarea v-model="newQuestion" placeholder="Ask the seller a question..."></textarea>
-                        <button @click="submitQuestion" class="btn btn-primary" :disabled="!newQuestion">Ask Question</button>
-                    </div>
-                </section>
-        </div>
-
-        <div class="sidebar-column">
-                <div class="bid-card">
-                    <div class="stat">
-                        <label>Current Bid</label>
-                        <div class="price">£{{ item.current_bid || item.starting_bid }}</div>
-                    </div>
-                    
-                    <div v-if="bidStatus.message" :class="['bid-status', bidStatus.type]">
-                        {{ bidStatus.message }}
-                    </div>
-
-                    <div class="bid-form">
-                        <input type="number" v-model.number="newBidAmount" :min="minNextBid" />
-                        <button @click="submitBid" class="btn btn-primary full-width" :disabled="isPlacingBid || isOwnItem">
-                            {{ getBidButtonText }}
-                        </button>
-                    </div>
-
-                    <div class="auction-meta">
-                        <p><strong>Starts:</strong> {{ formatDate(item.start_date) }}</p>
-                        <p><strong>Closes:</strong> {{ formatDate(item.end_date) }}</p>
-                    </div>
-
-                    <button @click="isModalOpen = true" class="btn-link">View Bid History</button>
+                <div class="questions-header">
+                <h3>Questions & Answers</h3>
+                <select v-model="questionSortOrder">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="answered">Answered First</option>
+                </select>
                 </div>
+
+                <div v-if="questions.length === 0" class="no-data">No questions yet.</div>
+                <div v-for="q in sortedQuestions" :key="q.question_id" class="question-card">
+                <p><strong>Q:</strong> {{ q.question_text }}</p>
+                <p v-if="q.answer_text"><strong>A:</strong> {{ q.answer_text }}</p>
+                <p v-else class="no-answer"><em>Awaiting seller response...</em></p>
+                </div>
+
+                <div v-if="isLoggedIn && !isOwnItem" class="ask-box">
+                <textarea v-model="newQuestion" placeholder="Ask the seller a question..."></textarea>
+                <button @click="submitQuestion" class="btn btn-primary" :disabled="!newQuestion">Ask Question</button>
+                </div>
+            </section>
+            </div>
+
+            <div class="sidebar-column">
+            <div class="bid-card">
+                <label>Current Bid</label>
+                <div class="price">£{{ item.current_bid || item.starting_bid }}</div>
+                
+                <div v-if="bidStatus.message" :class="['bid-status', bidStatus.type]">
+                {{ bidStatus.message }}
+                </div>
+
+                <div class="bid-form">
+                <input type="number" v-model.number="newBidAmount" :min="minNextBid" />
+                <button @click="submitBid" class="btn btn-primary full-width" :disabled="isPlacingBid || isOwnItem">
+                    {{ getBidButtonText }}
+                </button>
+                </div>
+
+                <div class="auction-meta">
+                <p><strong>Closes:</strong> {{ formatDate(item.end_date) }}</p>
+                </div>
+                <button @click="isModalOpen = true" class="btn-link">View Bid History</button>
+            </div>
             </div>
         </div>
 
-    <BidHistoryModal
-        :key="modalKey" 
-        :isOpen="isModalOpen" 
-        :itemId="item ? item.item_id : null" 
-        @close="isModalOpen = false" 
-    />
-</div>
+        <BidHistoryModal 
+            :isOpen="isModalOpen" 
+            :itemId="item?.item_id" 
+            @close="isModalOpen = false" 
+        />
+    </div>
 </template>
 
 <script>
@@ -124,8 +114,12 @@ computed: {
         return currentHighest + 1;
     },
     getBidButtonText() {
-        if (this.isPlacingBid) return 'Placing Bid...';
-        if (this.isOwnItem) return 'Cannot bid on your own item)';
+        if (this.isPlacingBid) {
+            return 'Placing Bid...';
+        }
+        if (this.isOwnItem) {
+            return 'Your Listing';
+        }
         return 'Place Bid';
     },
     sortedQuestions() {

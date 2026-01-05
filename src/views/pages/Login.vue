@@ -1,30 +1,30 @@
 <template>
     <div class="login-container">
-      <h1>Login</h1>
-      <form @submit.prevent="handleSubmit">
+    <h1>Login</h1>
+    <form @submit.prevent="handleSubmit">
         <div class="form-group">
             <label for="email">Email address:</label>
-            <input type="text" id="email" name="email" v-model = "email" />
+            <input type="email" id="email" v-model="email" placeholder="Email" class="custom-input" autocomplete="new-email" required />
             <div class="error" v-show="submitted && !email">Valid email address is required!</div>
         </div>
 
         <div class="form-group">
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" v-model = "password"/>
+            <input type="password" id="password" v-model="password" placeholder="Password" class="custom-input" autocomplete="new-password" required />
             <div class="error" v-show="submitted && !password">Password is required!</div>
         </div>
-        
-        <p>{{"This is the email and password showing for test only, email:" + email + " | password:" + password}}</p>
 
-        <button type="submit">Login</button>
-        <div class="error" v-if="error">{{error}}</div>
+        <button type="submit" :disabled="loading">
+        {{ loading ? 'Logging in...' : 'Login' }}
+        </button>
+        <div class="error" v-if="error">{{ error }}</div>
     </form>
     </div>
-  </template>
-  
-  <script>
-  import * as EmailValidator from 'email-validator';
-  import { UserService } from '@/services/user.service';
+</template>
+
+<script>
+import * as EmailValidator from 'email-validator';
+import { UserService } from '@/services/user.service';
 
     export default {
         name: 'Login',
@@ -32,9 +32,9 @@
             return {
                 email: "",
                 password: "",
-                submitted: false,   //starts as false, but we change when button is clicked.
-                error: "",          //initialise error property
-                loading: false      //add to avoid double clicks
+                submitted: false,   
+                error: "",         
+                loading: false     
             }
         },
         mounted() {
@@ -47,7 +47,7 @@
         methods: {
             handleSubmit() {
                 this.submitted = true;
-                this.error = "";    //clear previous error messages
+                this.error = "";    
                 const {email, password} = this;
                 
                 if(!(email && password)){
@@ -63,14 +63,12 @@
                     return;
                 }
                 this.loading = true; //set loading to true to avoid double clicks
-                //Call bac-end service
                 UserService.login(email, password)
                 .then(response => {
-                console.log("Login successful:", response);
+                    console.log("Login successful:", response);
                     // Store session token and redirect to home
                     localStorage.setItem('session_token', response.session_token);
                     localStorage.setItem('user_id', response.user_id);
-
                     //Redirect to home page
                     this.$router.push('/');
                 })
