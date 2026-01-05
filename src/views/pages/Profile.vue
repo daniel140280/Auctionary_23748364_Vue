@@ -51,60 +51,106 @@
                 Create Your First Listing
               </button>
             </div>
-            <div v-else class="items-grid">
+            <div v-else class="listings-container">
               <div
                 v-for="item in myItems"
                 :key="item.item_id"
-                class="listing-card"
+                class="listing-full-card"
               >
-                <div class="listing-header">
-                  <h3>{{ item.name }}</h3>
-                  <span class="bid-badge"
-                    >Current Bid: £{{
-                      item.current_bid || item.starting_bid
-                    }}</span
-                  >
-                </div>
-                <p class="listing-description">{{ item.description }}</p>
-                <p class="listing-meta">
-                  Ends: {{ formatDate(item.end_date) }}
-                </p>
-
-                <!-- Questions Section -->
-                <div
-                  v-if="item.questions && item.questions.length > 0"
-                  class="questions-section"
-                >
-                  <h4>Questions ({{ item.questions.length }})</h4>
-                  <div
-                    v-for="q in item.questions"
-                    :key="q.question_id"
-                    class="question-item"
-                  >
-                    <div class="question-text">
-                      <strong>Q:</strong> {{ q.question_text }}
-                    </div>
-                    <div v-if="q.answer_text" class="answer-text">
-                      <strong>A:</strong> {{ q.answer_text }}
-                    </div>
-                    <div v-else class="answer-form">
-                      <textarea
-                        v-model="pendingAnswers[q.question_id]"
-                        placeholder="Type your answer..."
-                        rows="2"
-                      ></textarea>
-                      <button
-                        @click="submitAnswer(q.question_id)"
-                        class="btn btn-small"
-                        :disabled="!pendingAnswers[q.question_id]"
-                      >
-                        Submit Answer
-                      </button>
-                    </div>
+                <!-- Item Info Section -->
+                <div class="listing-info-section">
+                  <div class="listing-header-row">
+                    <h3>{{ item.name }}</h3>
+                    <span class="bid-badge"
+                      >Current Bid: £{{
+                        item.current_bid || item.starting_bid
+                      }}</span
+                    >
+                  </div>
+                  <p class="listing-description">{{ item.description }}</p>
+                  <div class="listing-meta-row">
+                    <span class="meta-item">
+                      <strong>Starting Bid:</strong> £{{ item.starting_bid }}
+                    </span>
+                    <span class="meta-item">
+                      <strong>Ends:</strong> {{ formatDate(item.end_date) }}
+                    </span>
                   </div>
                 </div>
-                <div v-else class="no-questions">
-                  <em>No questions yet</em>
+
+                <!-- Questions Section - Collapsible -->
+                <div class="questions-container">
+                  <div
+                    class="questions-header-bar clickable"
+                    @click="toggleQuestions(item.item_id)"
+                  >
+                    <div class="questions-title-group">
+                      <h4>
+                        <span class="q-icon">💬</span>
+                        Questions
+                        <span class="question-count"
+                          >({{ item.questions?.length || 0 }})</span
+                        >
+                      </h4>
+                      <span
+                        v-if="getUnansweredCount(item.questions) > 0"
+                        class="unanswered-badge"
+                      >
+                        {{ getUnansweredCount(item.questions) }} Unanswered
+                      </span>
+                    </div>
+                    <span class="dropdown-icon">
+                      {{ expandedItems[item.item_id] ? "▼" : "▶" }}
+                    </span>
+                  </div>
+
+                  <div
+                    v-show="expandedItems[item.item_id]"
+                    class="questions-content"
+                  >
+                    <div
+                      v-if="!item.questions || item.questions.length === 0"
+                      class="no-questions-state"
+                    >
+                      <p>No questions yet</p>
+                    </div>
+
+                    <div v-else class="questions-list">
+                      <div
+                        v-for="q in item.questions"
+                        :key="q.question_id"
+                        class="question-answer-card"
+                      >
+                        <div class="question-block">
+                          <div class="q-label">Question</div>
+                          <div class="question-text">{{ q.question_text }}</div>
+                        </div>
+
+                        <div v-if="q.answer_text" class="answer-block answered">
+                          <div class="a-label">Your Answer</div>
+                          <div class="answer-text">{{ q.answer_text }}</div>
+                        </div>
+
+                        <div v-else class="answer-block unanswered">
+                          <div class="a-label">Answer this question</div>
+                          <div class="answer-input-group">
+                            <textarea
+                              v-model="pendingAnswers[q.question_id]"
+                              placeholder="Type your answer here..."
+                              rows="3"
+                            ></textarea>
+                            <button
+                              @click="submitAnswer(q.question_id)"
+                              class="btn btn-primary btn-submit-answer"
+                              :disabled="!pendingAnswers[q.question_id]"
+                            >
+                              Submit Answer
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -261,6 +307,7 @@ export default {
       pendingAnswers: {},
       showSellModal: false,
       newItem: { name: "", description: "", starting_bid: 0, end_date_raw: "" },
+      expandedItems: {},
     };
   },
   async created() {
@@ -290,10 +337,24 @@ export default {
         for (let item of this.myItems) {
           const qs = await QuestionService.getQuestionsForItem(item.item_id);
           item.questions = qs;
+
+          // Auto-expand if there are unanswered questions
+          if (this.getUnansweredCount(qs) > 0) {
+            this.expandedItems[item.item_id] = true;
+          }
         }
       } catch (err) {
         console.error("Error fetching items:", err);
       }
+    },
+
+    toggleQuestions(itemId) {
+      this.expandedItems[itemId] = !this.expandedItems[itemId];
+    },
+
+    getUnansweredCount(questions) {
+      if (!questions) return 0;
+      return questions.filter((q) => !q.answer_text).length;
     },
 
     handleCreateItem() {
@@ -431,7 +492,259 @@ export default {
   min-height: 400px;
 }
 
-/* Items Grid */
+/* Listings Container - Full Width Cards */
+.listings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.listing-full-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.listing-full-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Listing Info Section */
+.listing-info-section {
+  padding: 25px 30px;
+  background: white;
+}
+
+.listing-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  gap: 20px;
+}
+
+.listing-header-row h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+  flex: 1;
+}
+
+.bid-badge {
+  background: #42b983;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.listing-description {
+  color: #555;
+  margin: 15px 0;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.listing-meta-row {
+  display: flex;
+  gap: 30px;
+  margin-top: 15px;
+}
+
+.meta-item {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.meta-item strong {
+  color: #2c3e50;
+}
+
+/* Questions Container - Collapsible */
+.questions-container {
+  border-top: 2px solid #e0e0e0;
+}
+
+.questions-header-bar {
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  transition: background 0.3s ease;
+}
+
+.questions-header-bar.clickable {
+  cursor: pointer;
+}
+
+.questions-header-bar.clickable:hover {
+  background: #eef0f2;
+}
+
+.questions-title-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.questions-header-bar h4 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.q-icon {
+  font-size: 1.3rem;
+}
+
+.question-count {
+  color: #42b983;
+  font-weight: 700;
+}
+
+.unanswered-badge {
+  background: #e74c3c;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.dropdown-icon {
+  color: #42b983;
+  font-size: 1.2rem;
+  font-weight: 700;
+  transition: transform 0.3s ease;
+}
+
+.questions-content {
+  padding: 0 30px 25px 30px;
+}
+
+.no-questions-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Questions List */
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 20px;
+}
+
+.question-answer-card {
+  background: white;
+  border-radius: 10px;
+  padding: 25px;
+  border: 2px solid #e0e0e0;
+}
+
+.question-block {
+  margin-bottom: 20px;
+}
+
+.q-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #42b983;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.question-text {
+  color: #2c3e50;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.answer-block {
+  padding-top: 20px;
+  border-top: 1px dashed #e0e0e0;
+}
+
+.a-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.answer-block.answered .a-label {
+  color: #888;
+}
+
+.answer-block.unanswered .a-label {
+  color: #e74c3c;
+}
+
+.answer-text {
+  color: #555;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #42b983;
+}
+
+/* Answer Input Group */
+.answer-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.answer-input-group textarea {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.3s ease;
+}
+
+.answer-input-group textarea:focus {
+  outline: none;
+  border-color: #42b983;
+  box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
+}
+
+.btn-submit-answer {
+  align-self: flex-end;
+  padding: 12px 30px;
+}
+
+/* Items Grid (for other tabs) */
 .items-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -439,7 +752,6 @@ export default {
 }
 
 /* Listing Cards */
-.listing-card,
 .bid-card,
 .ended-card {
   background: #f8f9fa;
@@ -449,35 +761,16 @@ export default {
   transition: all 0.3s ease;
 }
 
-.listing-card:hover,
 .bid-card:hover {
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
-.listing-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 15px;
-}
-
-.listing-header h3 {
-  margin: 0;
+.bid-card h3,
+.ended-card h3 {
+  margin: 0 0 15px 0;
   color: #2c3e50;
   font-size: 1.3rem;
-  flex: 1;
-}
-
-.bid-badge {
-  background: #42b983;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap;
-  margin-left: 10px;
 }
 
 .ended-badge {
@@ -489,98 +782,10 @@ export default {
   display: inline-block;
 }
 
-.listing-description {
-  color: #555;
-  margin: 10px 0;
-  line-height: 1.5;
-}
-
 .listing-meta {
   color: #888;
   font-size: 0.9rem;
   margin: 5px 0;
-}
-
-/* Questions Section */
-.questions-section {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 2px solid #e0e0e0;
-}
-
-.questions-section h4 {
-  margin: 0 0 15px 0;
-  color: #2c3e50;
-  font-size: 1.1rem;
-}
-
-.question-item {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  border-left: 4px solid #42b983;
-}
-
-.question-text {
-  color: #2c3e50;
-  margin-bottom: 10px;
-  font-size: 0.95rem;
-}
-
-.answer-text {
-  color: #555;
-  padding-left: 15px;
-  font-size: 0.95rem;
-}
-
-.answer-form {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.answer-form textarea {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-family: inherit;
-  resize: vertical;
-  font-size: 0.95rem;
-}
-
-.answer-form textarea:focus {
-  outline: none;
-  border-color: #42b983;
-}
-
-.btn-small {
-  padding: 8px 16px;
-  background: #42b983;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  white-space: nowrap;
-  font-size: 0.9rem;
-}
-
-.btn-small:hover {
-  background: #359268;
-}
-
-.btn-small:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.no-questions {
-  color: #999;
-  font-style: italic;
-  text-align: center;
-  padding: 20px 0;
 }
 
 /* Empty States */
@@ -744,9 +949,18 @@ export default {
   border-color: #42b983;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: #359268;
   border-color: #359268;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 185, 131, 0.3);
+}
+
+.btn-primary:disabled {
+  background-color: #ccc;
+  border-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-outline {
