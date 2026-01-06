@@ -4,76 +4,80 @@
     <nav>
       <router-link to="/">Home</router-link> |
       <span v-if="!item_in_storage">
-          <router-link to="/login" class="nav-link">Login</router-link> |
-          <router-link to="/register" class="nav-link">Register</router-link>
+        <router-link to="/login" class="nav-link">Login</router-link> |
+        <router-link to="/register" class="nav-link">Register</router-link>
       </span>
 
       <span v-else class="logout-section">
-          <router-link to="/profile" class="nav-link profile-link">Profile</router-link> |
-          <button @click="handleLogout" class="logout-button">Logout</button>
+        <router-link to="/profile" class="nav-link profile-link">Profile</router-link> |
+        <button @click="handleLogout" class="logout-button">Logout</button>
       </span>
     </nav>
-      <div class="message-container" v-if="successMessage || errorMessage">
-        <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
-        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      </div>
-    <!-- router-view displays the current route's component -->
-    <router-view/>
+    <div class="message-container" v-if="successMessage || errorMessage">
+      <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
+      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+    </div>
+    <router-view />
   </div>
 </template>
 
 <script>
-import { UserService } from '@/services/user.service';
+import { UserService } from "@/services/user.service";
 
 export default {
-  name: 'App',
+  name: "App",
   data() {
     return {
       item_in_storage: localStorage.getItem('session_token'),
-      successMessage: '',
-      errorMessage: ''
+      successMessage: "",
+      errorMessage: "",
+      hasShownLoginMessage: false,
     }
   },
   watch: {
     $route() {
-    // Watch for route changes to update the menu if we log in/out
-    this.item_in_storage = localStorage.getItem('session_token');
-    this.successMessage = '';
-    this.errorMessage = '';
+      this.item_in_storage = localStorage.getItem("session_token");
+      this.successMessage = "";
+      this.errorMessage = "";
 
-    if (this.$route.name === 'Home' && localStorage.getItem('session_token')) {
-      this.successMessage = 'You have successfully logged in!';
-      setTimeout(() => { this.successMessage = ''; }, 5000);
-    }
-  }
+      if (this.$route.name === "Home" && localStorage.getItem("session_token") && !this.hasShownLoginMessage) {
+        this.successMessage = "You have successfully logged in!";
+        this.hasShownLoginMessage = true;
+        setTimeout(() => {
+          this.successMessage = "";
+        }, 2500);
+      }
+    },
   },
   methods: {
       handleLogout() {
         // Clear previous messages
-        this.successMessage = '';
-        this.errorMessage = '';
+        this.successMessage = "";
+        this.errorMessage = "";
           // 1. Call Backend to invalidate token
           UserService.logout()
           .then((data) => {
               // 2. Clear Local Storage
-              localStorage.removeItem('session_token');
-              localStorage.removeItem('user_id');
+              localStorage.removeItem("session_token");
+              localStorage.removeItem("user_id");
               
               // 3. Update State
               this.item_in_storage = null;
+              this.hasShownLoginMessage = false;
               this.successMessage = data.message;
               setTimeout(() => {
                 // 4. Redirect to Home (or Login)
-              this.$router.push('/login');
+              this.$router.push("/login");
               }, 1000);
           })
           .catch(err => {
               console.error("Logout failed", err);
-              this.errorMessage = 'Logout failed on server. You have been logged out locally.';
+              this.errorMessage = "Logout failed on server. You have been logged out locally.";
               // Force logout on frontend even if backend fails
               localStorage.removeItem('session_token');
               this.item_in_storage = null;
-              this.$router.push('/login');
+              this.hasShownLoginMessage = false;
+              this.$router.push("/login");
           });
       }
   }
@@ -99,7 +103,7 @@ nav a.router-link-active {
 
 .logout-button {
   padding: 0.5rem 1rem;
-  background-color: #42b983; 
+  background-color: #42b983;
   color: white;
   border: none;
   border-radius: 4px;
