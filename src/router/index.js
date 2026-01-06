@@ -18,7 +18,7 @@ const routes = [
     // { path: '/item/:item_id', name: 'SingleItem', component: SingleItem },
     // { path: '/profile', name: 'Profile', component: Profile},
     { path: '/questions', name: 'Questions', component: Questions, meta: { requiresAuth: true } },
-    { path: '/item/:item_id', name: 'SingleItem', component: SingleItem, meta: { requiresAuth: true } },
+    { path: '/item/:item_id', name: 'SingleItem', component: SingleItem, meta: { requiresAuth: false } },
     { path: '/profile', name: 'Profile', component: Profile, meta: { requiresAuth: true } },
     
     // { path: '/questions', component: Questions, beforeEnter: ifAuthenticated },

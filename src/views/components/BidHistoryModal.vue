@@ -90,7 +90,7 @@
       this.$emit('close');
     },
     formatTime(timestamp) {
-      return new Date(timestamp * 1000).toLocaleString();
+      return new Date(timestamp).toLocaleString('en-GB');
     }
   }
 };

@@ -3,8 +3,6 @@
     <!-- Navigation menu - this stays on all pages -->
     <nav>
       <router-link to="/">Home</router-link> |
-      <router-link to="/questions">Questions</router-link>
-
       <span v-if="!item_in_storage">
           <router-link to="/login" class="nav-link">Login</router-link> |
           <router-link to="/register" class="nav-link">Register</router-link>
@@ -129,10 +127,4 @@ nav a.router-link-active {
   padding: 0.5rem;
 }
 
-.error-message {
-  background-color: #ffeeee;
-  color: #d9534f;
-  border: 1px solid #d9534f;
-  padding: 0.5rem;
-}
 </style>
