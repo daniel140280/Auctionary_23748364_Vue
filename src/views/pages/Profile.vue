@@ -286,7 +286,7 @@
 import { UserService } from "@/services/user.service";
 import { CoreService } from "@/services/core.service";
 import { QuestionService } from "@/services/question.service";
-import Filter from "bad-words";
+import { Filter } from "bad-words";
 
 export default {
     name: "Profile",
