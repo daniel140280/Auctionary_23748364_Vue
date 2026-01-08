@@ -286,6 +286,7 @@
 import { UserService } from "@/services/user.service";
 import { CoreService } from "@/services/core.service";
 import { QuestionService } from "@/services/question.service";
+import Filter from "bad-words";
 
 export default {
     name: "Profile",
@@ -347,12 +348,16 @@ export default {
         },
 
         handleCreateItem() {
+            const filter = new Filter();
+            const santisedName = filter.clean(this.newItem.name);
+            const santisedDescription = filter.clean(this.newItem.description);
+
             const unixEnd = Math.floor(
                 new Date(this.newItem.end_date_raw).getTime() / 1000
             );
             const payload = {
-                name: this.newItem.name,
-                description: this.newItem.description,
+                name: santisedName,
+                description: santisedDescription,
                 starting_bid: this.newItem.starting_bid,
                 end_date: unixEnd,
             };
@@ -377,7 +382,11 @@ export default {
             if (!answerText) {
                 return;
             }
-            QuestionService.answerQuestion(qId, answerText)
+
+            const filter = new Filter();
+            const santisedAnswer = filter.clean(answerText);
+
+            QuestionService.answerQuestion(qId, santisedAnswer)
                 .then(() => {
                 alert("Answer posted successfully!");
                 this.pendingAnswers[qId] = "";

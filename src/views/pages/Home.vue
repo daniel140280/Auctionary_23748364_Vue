@@ -26,7 +26,7 @@
           </div>
         </div>
 
-        <p>The premium auction house for high-end watches and jewellery.</p>
+        <p>The premium auction house for speciality gardening equipment and unique seeds.</p>
         
         <div class="search-bar-row">
           <input type="text" v-model="searchQuery" placeholder="Search items..."/>
