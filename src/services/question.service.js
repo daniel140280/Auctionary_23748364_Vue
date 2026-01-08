@@ -1,3 +1,7 @@
+import Filter from "bad-words";
+
+const filter = new Filter();
+
 const getQuestionsForItem = (item_id) => {
     return fetch(`http://localhost:3333/item/${item_id}/question`)
     .then((response) => {
@@ -14,13 +18,15 @@ const getQuestionsForItem = (item_id) => {
 }
 
 const askQuestion = (item_id, questionText) => {
+    const sanitisedQuestion = filter.clean(questionText);
+
     return fetch(`http://localhost:3333/item/${item_id}/question`, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
             'X-Authorization': localStorage.getItem('session_token')},
         body: JSON.stringify({
-            question_text: questionText
+            question_text: sanitisedQuestion
         })
     })
     .then((response) => {
@@ -33,13 +39,17 @@ const askQuestion = (item_id, questionText) => {
     )};
 
 const answerQuestion = (question_id, answerText) => {
+    const sanitisedAnswer = filter.clean(answerText);
+
     return fetch(`http://localhost:3333/question/${question_id}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Authorization': localStorage.getItem('session_token')
         },
-        body: JSON.stringify({ answer_text: answerText })
+        body: JSON.stringify({ 
+            answer_text: sanitisedAnswer 
+        })
     })
     .then((response) => {
         if (response.status === 200) {

@@ -11,22 +11,16 @@
           <div class="auth-options">
             <template v-if="!isLoggedIn">
               <router-link to="/login" class="btn btn-solid">Login</router-link>
-              <router-link to="/register" class="btn btn-outline-hero"
-                >Create Account</router-link
-              >
+              <router-link to="/register" class="btn btn-outline-hero">Create Account</router-link>
             </template>
             <template v-else>
-              <router-link to="/profile" class="btn btn-solid"
-                >My Profile</router-link
-              >
-              <button @click="handleLogout" class="btn btn-outline-hero">
-                Logout
-              </button>
+              <router-link to="/profile" class="btn btn-solid">My Profile</router-link>
+              <button @click="handleLogout" class="btn btn-outline-hero">Logout</button>
             </template>
           </div>
         </div>
 
-        <p>The premium auction house for high-end watches and jewellery.</p>
+        <p>The premium auction house for speciality gardening equipment and seeds.</p>
         
         <div class="search-bar-row">
           <input type="text" v-model="searchQuery" placeholder="Search items..."/>

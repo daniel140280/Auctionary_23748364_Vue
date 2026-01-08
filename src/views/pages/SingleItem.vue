@@ -173,7 +173,8 @@
 <script>
 import { CoreService } from "@/services/core.service";
 import { QuestionService } from "@/services/question.service";
-import  BidHistoryModal from "@/views/components/BidHistoryModal.vue";
+import BidHistoryModal from "@/views/components/BidHistoryModal.vue";
+import Filter from "bad-words";
 
 export default {
     name: "SingleItem",
@@ -258,8 +259,10 @@ export default {
         if (!this.newQuestion.trim()) {
             return;
         }
+        const filter = new Filter();
+        const santisedQuestion = filter.clean(this.newQuestion);
 
-        QuestionService.askQuestion(this.item.item_id, this.newQuestion)
+        QuestionService.askQuestion(this.item.item_id, santisedQuestion)
             .then(() => {
             this.newQuestion = "";
             this.fetchQuestions();
