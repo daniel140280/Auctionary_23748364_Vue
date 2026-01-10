@@ -36,8 +36,8 @@
       <div class="results-area">
         <h2 class="section-title">{{ search_message }}</h2>
 
-        <div v-if="filteredItems.length" class="item-grid">
-          <div v-for="item in filteredItems" :key="item.item_id" class="item-card">
+        <div v-if="paginatedItems.length" class="item-grid">
+          <div v-for="item in paginatedItems" :key="item.item_id" class="item-card">
             <div class="card-header">
               <h3>{{ item.name }}</h3>
               <span class="seller-tag">by {{ item.first_name }} {{ item.last_name }}</span>
@@ -55,6 +55,52 @@
               <button @click="openHistory(item.item_id)" class="btn btn-primary">Bid History</button>
             </div>
           </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div v-if="totalPages > 1" class="pagination">
+          <button
+            @click="goToPage(1)"
+            :disabled="currentPage === 1"
+            class="pagination-btn"
+          >
+            &#171; First
+          </button>
+          <button
+            @click="goToPage(currentPage - 1)"
+            :disabled="currentPage === 1"
+            class="pagination-btn"
+          >
+            &#8249; Prev
+          </button>
+
+          <button
+            v-for="page in visiblePages"
+            :key="page"
+            @click="goToPage(page)"
+            :class="['pagination-btn', { active: currentPage === page }]"
+          >
+            {{ page }}
+          </button>
+
+          <button
+            @click="goToPage(currentPage + 1)"
+            :disabled="currentPage === totalPages"
+            class="pagination-btn"
+          >
+            Next &#8250;
+          </button>
+          <button
+            @click="goToPage(totalPages)"
+            :disabled="currentPage === totalPages"
+            class="pagination-btn"
+          >
+            Last &#187;
+          </button>
+        </div>
+
+        <div v-if="filteredItems.length === 0" class="no-results">
+          <p>No items found matching your search criteria.</p>
         </div>
       </div>
 
@@ -81,6 +127,7 @@ export default {
       welcome_message: "Welcome to the Auctionable Marketplace",
       search_message: "Current Items for sale and to bid on!",
       items: [], //Array to hold fetched items from server
+      allItems: [], //Store all items for filtering
       error: "",
       loading: true,
       searchQuery: "",
@@ -89,11 +136,14 @@ export default {
       isLoggedIn: !!localStorage.getItem("session_token"),
       statusFilter: "all",
       currentUserId: parseInt(localStorage.getItem("user_id")),
+      currentPage: 1,
+      itemsPerPage: 6,
+      totalItems: 0,
     };
   },
   computed: {
     filteredItems() {
-      let list = this.items;
+      let list = this.allItems;
       if (this.searchQuery) {
         const q = this.searchQuery.toLowerCase();
         list = list.filter(
@@ -104,28 +154,69 @@ export default {
       }
       const now = Date.now();
       if (this.statusFilter === "open") {
-        list = list.filter((i) => i.end_date > now);
+        list = list.filter((i) => i.end_date * 1000 > now);
       } else if (this.statusFilter === "archive") {
-        list = list.filter((i) => i.end_date < now);
+        list = list.filter((i) => i.end_date * 1000 < now);
       } else if (this.statusFilter === "bid") {
         list = list.filter((i) => i.current_bidder_id === this.currentUserId);
       }
       return list;
     },
+    totalPages() {
+      return Math.ceil(this.filteredItems.length / this.itemsPerPage);
+    },
+    paginatedItems() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredItems.slice(start, end);
+    },
+    visiblePages() {
+      const pages = [];
+      const maxVisible = 5;
+      let startPage = Math.max(
+        1,
+        this.currentPage - Math.floor(maxVisible / 2)
+      );
+      let endPage = Math.min(this.totalPages, startPage + maxVisible - 1);
+      if (endPage - startPage + 1 < maxVisible) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+      return pages;
+    },
+  },
+  watch: {
+    filteredItems() {
+      if (this.currentPage > this.totalPages) {
+        this.currentPage = Math.max(1, this.totalPages);
+      }
+    },
   },
   mounted() {
-    CoreService.searchItems()
-      .then((items) => {
-        this.items = items;
-        this.loading = false;
-      })
-      .catch((err) => {
-        this.error =
-          err.message || "Failed to load items. Check the server console.";
-          this.loading = false;
-        });
+    this.fetchAllItems();
       },
   methods: {
+    async fetchAllItems() {
+      try {
+        this.loading = true;
+        const items = await CoreService.searchItems(100, 0);
+        this.allItems = items;
+        this.items = items;
+        this.loading = false;
+      } catch (err) {
+        this.error =
+          err.message || "Failed to load items. Check the server console.";
+        this.loading = false;
+      }
+    },
+    goToPage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
     openHistory(id) {
       this.selectedItemId = id;
       this.isModalOpen = true;
@@ -265,6 +356,7 @@ export default {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 25px;
   margin-top: 20px;
+  margin-bottom: 40px;
 }
 .item-card:hover {
   transform: translateY(-5px);
@@ -335,5 +427,49 @@ export default {
 .error-msg {
   color: #d9534f;
   text-align: center;
+}
+/* Pagination Styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+.pagination-btn {
+  padding: 10px 16px;
+  background: white;
+  border: 2px solid #42b983;
+  border-radius: 6px;
+  color: #42b983;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  min-width: 44px;
+}
+.pagination-btn:hover:not(:disabled) {
+  background: #42b983;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(66, 185, 131, 0.3);
+}
+.pagination-btn:disabled {
+  background: #f0f0f0;
+  border-color: #ddd;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+}
+.pagination-btn.active {
+  background: #42b983;
+  color: white;
+  border-color: #42b983;
+  cursor: default;
+}
+.pagination-btn.active:hover {
+  transform: none;
+  box-shadow: none;
 }
 </style>

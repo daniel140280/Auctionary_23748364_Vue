@@ -104,23 +104,13 @@
                         </span>
                         </div>
     
-                        <div
-                        v-show="expandedItems[item.item_id]"
-                        class="questions-content"
-                        >
-                        <div
-                            v-if="!item.questions || item.questions.length === 0"
-                            class="no-questions-state"
-                        >
+                        <div v-show="expandedItems[item.item_id]" class="questions-content">
+                        <div v-if="!item.questions || item.questions.length === 0" class="no-questions-state">
                             <p>No questions yet</p>
                         </div>
 
                         <div v-else class="questions-list">
-                            <div
-                            v-for="q in item.questions"
-                            :key="q.question_id"
-                            class="question-answer-card"
-                            >
+                            <div v-for="q in item.questions" :key="q.question_id" class="question-answer-card">
                             <div class="question-block">
                                 <div class="q-label">Question</div>
                                 <div class="question-text">{{ q.question_text }}</div>
@@ -158,19 +148,12 @@
     
                 <!-- Active Bids Tab -->
                 <div v-if="activeTab === 'bidding'" class="bids-section">
-                <div
-                    v-if="!profile?.bidding_on || profile.bidding_on.length === 0"
-                    class="empty-state"
-                >
+                <div v-if="!profile?.bidding_on || profile.bidding_on.length === 0" class="empty-state">
                     <p>You haven't placed any bids yet.</p>
                     <router-link to="/" class="btn btn-outline">Browse Auctions</router-link>
                 </div>
                 <div v-else class="items-grid">
-                    <div
-                    v-for="item in profile.bidding_on"
-                    :key="item.item_id"
-                    class="bid-card"
-                    >
+                    <div v-for="item in profile.bidding_on" :key="item.item_id" class="bid-card">
                     <h3>{{ item.name }}</h3>
                     <p class="listing-description">{{ item.description }}</p>
                     <p class="listing-meta">
@@ -396,7 +379,7 @@ export default {
 
         formatDate(timestamp) {
             if (!timestamp) return "N/A";
-            return new Date(timestamp).toLocaleString("en-GB");
+            return new Date(timestamp * 1000).toLocaleString("en-GB");
         },
     },
 };
